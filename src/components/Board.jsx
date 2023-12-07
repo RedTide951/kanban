@@ -10,7 +10,7 @@ const Board = ({ columns, addColumn, removeColumn }) => {
         <Column key={index} columnIndex={index} column={column} />
       ))}
       <button onClick={() => addColumn()}>Add Column</button>
-      {columns.length > 1 && (
+      {columns.length > 0 && (
         <button onClick={() => removeColumn(columns.length - 1)}>Remove Column</button>
       )}
     </div>
