@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { addColumn, removeColumn } from '../actions/columnActions';
-import Column from './Column';
+import Column from './Column.jsx';
 
 const Board = ({ columns, addColumn, removeColumn }) => {
   return (
