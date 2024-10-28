@@ -1,7 +1,22 @@
-import { ADD_COLUMN, REMOVE_COLUMN } from '../actions/columnActions';
+import { ADD_COLUMN, REMOVE_COLUMN, UPDATE_COLUMNS } from '../actions/columnActions';
 
 const initialState = {
-  columns: [],
+  columns: [
+    {
+      title: 'Column 1',
+      cards: [
+        { id: 'card-1', content: 'Card 1' },
+        { id: 'card-2', content: 'Card 2' },
+      ],
+    },
+    {
+      title: 'Column 2',
+      cards: [
+        { id: 'card-3', content: 'Card 3' },
+        { id: 'card-4', content: 'Card 4' },
+      ],
+    },
+  ],
 };
 
 const columnReducer = (state = initialState, action) => {
@@ -17,6 +32,11 @@ const columnReducer = (state = initialState, action) => {
       return {
         ...state,
         columns: updatedColumns,
+      };
+    case UPDATE_COLUMNS:
+      return {
+        ...state,
+        columns: action.payload,
       };
     default:
       return state;

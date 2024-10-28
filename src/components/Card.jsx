@@ -1,10 +1,9 @@
 import React from 'react';
-import { DragDropContext, Draggable } from 'react-beautiful-dnd';
+import { Draggable } from 'react-beautiful-dnd';
 
 const Card = ({ card, index }) => {
   return (
     <Draggable draggableId={`${card.id}`} index={index}>
-      <DragDropContext>
       {(provided) => (
         <div
           ref={provided.innerRef}
@@ -15,7 +14,6 @@ const Card = ({ card, index }) => {
           {card.content}
         </div>
       )}
-      </DragDropContext>
     </Draggable>
   );
 };
