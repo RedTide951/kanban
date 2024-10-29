@@ -1,68 +1,186 @@
-import React from 'react';
-import { connect } from 'react-redux';
-import { addColumn, removeColumn, updateColumns } from '../actions/columnActions';
-import Column from './Column.jsx';
-import { DragDropContext } from 'react-beautiful-dnd';
+import React from "react";
+import Button from "./ui/Button";
+import Tooltip from "./ui/Tooltip";
+import Icon from "./ui/Icon";
 
-const Board = ({ columns, addColumn, removeColumn, dispatch }) => {
+import { useSelector, useDispatch } from "react-redux";
+import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import {
+  sort,
+  toggleColumnModal,
+  deleteColumnBoard,
+  toggleTaskModal,
+} from "./store";
+import Task from "./Task";
+import AddColumn from "./AddColumn";
+import AddTaskModal from "./AddTaskModal";
+import { ToastContainer } from "react-toastify";
+import EditTaskModal from "./EditTask";
+const KanbanPage = () => {
+  const { columns, taskModal } = useSelector((state) => state.kanban);
+  const dispatch = useDispatch();
 
-const onDragEnd = (result) => {
-    const { source, destination } = result;
-
-    // If there's no destination (dropped outside a column), do nothing
+  const onDragEnd = (result) => {
+    const { destination, source, draggableId, type } = result;
+    console.log('Result:', result);
     if (!destination) {
       return;
     }
 
-    // If the location of the draggable did not change, do nothing
-    if (
-      source.droppableId === destination.droppableId &&
-      source.index === destination.index
-    ) {
-      return;
-    }
-
-    // Finding the column from which the card is dragged and the card
-    const sourceColumn = columns[source.droppableId];
-    const draggedCard = sourceColumn.cards[source.index];
-
-    // Performing the drag and drop operation
-    const newColumns = Array.from(columns);
-    newColumns[source.droppableId] = {
-      ...sourceColumn,
-      cards: [...sourceColumn.cards],
-    };
-    newColumns[source.droppableId].cards.splice(source.index, 1);
-
-    const destinationColumn = columns[destination.droppableId];
-    newColumns[destination.droppableId] = {
-      ...destinationColumn,
-      cards: [...destinationColumn.cards],
-    };
-    newColumns[destination.droppableId].cards.splice(destination.index, 0, draggedCard);
-
-    // Dispatching the action to update the columns in the state
-    dispatch(updateColumns(newColumns));
+    dispatch(sort(result));
   };
-
+  for (let i = 0; i < columns.length; i++) {
+    console.log('Column:', columns[i]);
+  }
 
   return (
-    <DragDropContext onDragEnd={onDragEnd}>
-      <div className="board">
-        {columns.map((column, index) => (
-          <Column key={index} columnIndex={index} column={column} />
-        ))}
-        <button onClick={() => addColumn()}>Add Column</button>
-        {columns.length > 0 && (
-          <button onClick={() => removeColumn(columns.length - 1)}>Remove Column</button>
-        )}
+    <div>
+      <ToastContainer />
+      <div className="flex flex-wrap justify-between items-center mb-4">
+        <h4 className="font-medium lg:text-2xl text-xl capitalize text-slate-900 inline-block ltr:pr-4 rtl:pl-4">
+          kanban
+        </h4>
+        <div className="flex space-x-4 justify-end items-center rtl:space-x-reverse">
+          <Button
+            icon="heroicons-outline:plus"
+            text="Add Board"
+            className="bg-slate-800 dark:hover:bg-opacity-70   h-min text-sm font-medium text-slate-50 hover:ring-2 hover:ring-opacity-80 ring-slate-900  hover:ring-offset-1  dark:hover:ring-0 dark:hover:ring-offset-0"
+            iconclassName=" text-lg"
+            onClick={() => dispatch(toggleColumnModal(true))}
+          />
+        </div>
       </div>
-    </DragDropContext>
+
+      <div>
+        <DragDropContext onDragEnd={onDragEnd}>
+          <Droppable droppableId="all-lists" direction="horizontal" type="list">
+            {(provided, snapshot) => (
+              <div
+                ref={provided.innerRef}
+                {...provided.droppableProps}
+                className="flex space-x-6 overflow-hidden overflow-x-auto pb-4 rtl:space-x-reverse"
+              >
+                {columns?.map((column, i) => {
+                  return (
+                    <Draggable
+                      key={column.id}
+                      draggableId={column.id}
+                      index={i}
+                    >
+                      {(provided, snapshot) => (
+                        <div
+                          ref={provided.innerRef}
+                          {...provided.draggableProps}
+                          {...provided.dragHandleProps}
+                        >
+                          <div
+                            className={`w-[320px] flex-none h-full  rounded transition-all duration-100 ${snapshot.isDragging
+                              ? "shadow-xl bg-primary-300"
+                              : "shadow-none bg-slate-200 dark:bg-slate-700"
+                              } 
+                       
+                            `}
+                          >
+                            {/* Board Header*/}
+                            <div className="relative flex justify-between items-center bg-white dark:bg-slate-800 rounded shadow-base px-6 py-5">
+                              <div
+                                className="absolute left-0 top-1/2 -translate-y-1/2 h-8 w-[2px]"
+                                style={{
+                                  backgroundColor: column.color,
+                                }}
+                              ></div>
+                              <div className="text-lg text-slate-900 dark:text-white font-medium capitalize">
+                                {column.name}
+                              </div>
+                              <div className="flex items-center space-x-2 rtl:space-x-reverse">
+                                <Tooltip
+                                  placement="top"
+                                  arrow
+                                  theme="danger"
+                                  content="Delete"
+                                >
+                                  <button
+                                    className="border border-slate-200 dark:border-slate-700 dark:text-slate-400 rounded h-6 w-6 flex flex-col  items-center justify-center text-base text-slate-600"
+                                    onClick={() =>
+                                      dispatch(deleteColumnBoard(column.id))
+                                    }
+                                  >
+                                    <Icon icon="heroicons-outline:trash" />
+                                  </button>
+                                </Tooltip>
+
+                                <Tooltip
+                                  placement="top"
+                                  arrow
+                                  theme="dark"
+                                  content="Add Card"
+                                >
+                                  <button
+                                    className="border border-slate-200 dark:border-slate-700 dark:text-slate-400 rounded h-6 w-6 flex flex-col  items-center justify-center text-base text-slate-600"
+                                    onClick={() =>
+                                      dispatch(
+                                        toggleTaskModal({
+                                          open: true,
+                                          columnId: column.id,
+                                        })
+                                      )
+                                    }
+                                  >
+                                    <Icon icon="heroicons-outline:plus-sm" />
+                                  </button>
+                                </Tooltip>
+                              </div>
+                            </div>
+                            <Droppable
+                              droppableId={column.id}
+                              type="task"
+                              direction="vertical"
+                            >
+                              {(provided, snapshot) => (
+                                <div
+                                  ref={provided.innerRef}
+                                  {...provided.droppableProps}
+                                  className={`px-2 py-4 h-full space-y-4  ${snapshot.isDraggingOver && "bg-primary-400"
+                                    }`}
+                                >
+                                  {column.tasks?.map((task, j) => (
+                                    <Draggable
+                                      key={j}
+                                      draggableId={task.id}
+                                      index={j}
+                                    >
+                                      {(provided) => (
+                                        <div
+                                          ref={provided.innerRef}
+                                          {...provided.draggableProps}
+                                          {...provided.dragHandleProps}
+                                        >
+                                          <Task task={task} />
+                                        </div>
+                                      )}
+                                    </Draggable>
+                                  ))}
+                                  {provided.placeholder}
+                                </div>
+                              )}
+                            </Droppable>
+                          </div>
+                        </div>
+                      )}
+                    </Draggable>
+                  );
+                })}
+                {provided.placeholder}
+              </div>
+            )}
+          </Droppable>
+        </DragDropContext>
+      </div>
+      <AddColumn />
+      <AddTaskModal />
+      <EditTaskModal />
+    </div>
   );
 };
 
-const mapStateToProps = (state) => ({
-  columns: state.columns.columns,
-});
-
-export default connect(mapStateToProps, { addColumn, removeColumn })(Board);
+export default KanbanPage;

@@ -1,8 +1,9 @@
 import React from 'react';
 import { Provider } from 'react-redux';
-import store from './store';
+import store from './store/index.js';
 import Board from './components/Board';
 import '@radix-ui/themes/styles.css';
+import './App.css';
 import { Theme, ThemePanel } from '@radix-ui/themes';
 
 function App() {
@@ -14,7 +15,6 @@ function App() {
           <Board />
         </div>
       </Provider>
-      <ThemePanel />
     </Theme>
   );
 }
